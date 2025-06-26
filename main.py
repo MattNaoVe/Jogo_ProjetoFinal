@@ -6,33 +6,30 @@ import time
 from pygame.locals import *
 from PIL import Image, ImageSequence
 
-# Inicialização
 pygame.init()
-pygame.mixer.init()  # Inicializa o mixer de áudio
+pygame.mixer.init()
 pygame.display.set_caption('Escape Room')
 
-# Configurações
+
 largura_tela, altura_tela = 800, 600
 tela = pygame.display.set_mode((largura_tela, altura_tela))
 gerente = pygame_gui.UIManager((largura_tela, altura_tela))
 tempo = pygame.time.Clock()
 
-# Cores
 branco = (255, 255, 255)
 preto = (0, 0, 0)
 vermelho = (255, 0, 0)
 verde = (0, 255, 0)
 azul = (0, 0, 255)
 dourado = (255, 215, 0)
-cinza = (150, 150, 150)  # Cor para texto nas fases escuras
+cinza = (150, 150, 150)
 
 # Carregar sons
-pygame.mixer.music.load('PirateBay8.mp3')  # Música de fundo
-som_sucesso = pygame.mixer.Sound('acerto.mp3')  # Som ao passar de sala
+pygame.mixer.music.load('PirateBay8.mp3')
+som_sucesso = pygame.mixer.Sound('acerto.mp3')
 
-# Configurações de áudio
-VOLUME_MUSICA = 0.5  # 50% do volume
-pygame.mixer.music.set_volume(VOLUME_MUSICA)
+volume_musica = 0.5
+pygame.mixer.music.set_volume(volume_musica)
 
 # Estados do jogo
 MENU, DIFICULDADE, GAME, CODE_INPUT, GAME_OVER, VITORIA = 0, 1, 2, 3, 4, 5
@@ -55,26 +52,25 @@ def carregar_gif(caminho):
 # Carregar os quadros do GIF
 quadros_jogador = carregar_gif("sprite_frente_andando.gif")
 quadro_atual = 0
-tempo_animacao = 0.1  # Tempo entre quadros em segundos
-tempo_passado = 0  # Acumulador de tempo
+tempo_animacao = 0.1 
+tempo_passado = 0  
 
-# Criar fundos progressivamente mais escuros para cada sala
+# Criar os fundo
 imagens_fundo = []
 cores_fundo = [
-    (100, 100, 100),   # Sala 1 - Cinza médio
+    (100, 100, 100),   # Sala 1
     (80, 80, 80),      # Sala 2
     (60, 60, 60),      # Sala 3
     (40, 40, 40),      # Sala 4
     (20, 20, 20),      # Sala 5
-    (0, 0, 0)          # Sala 6 - Preto total
+    (0, 0, 0)          # Sala 6
 ]
 
 for cor in cores_fundo:
     fundo = pygame.Surface((largura_tela, altura_tela))
     fundo.fill(cor)
     
-    # Adicionar detalhes sutis nas salas mais claras
-    if cor[0] > 40:  # Apenas para as salas mais claras
+    if cor[0] > 40:
         for x in range(0, largura_tela, 40):
             for y in range(0, altura_tela, 40):
                 pygame.draw.rect(fundo, (cor[0]+20, cor[1]+20, cor[2]+20), (x, y, 20, 20), 1)
@@ -97,7 +93,7 @@ fonte_pequena = pygame.font.SysFont('Arial', 24)
 fonte_media = pygame.font.SysFont('Arial', 32)
 fonte_larga = pygame.font.SysFont('Arial', 48)
 
-# Elementos da UI
+#Elemento GUI
 def criar_botao(x, y, text, visible=True):
     btn = pygame_gui.elements.UIButton(
         relative_rect=pygame.Rect((x, y), (200, 50)), 
@@ -122,7 +118,7 @@ enviar_btn = criar_botao(300, 420, 'Confirmar', False)
 continuar_btn = criar_botao(300, 400, 'Continuar', False)
 reiniciar_btn = criar_botao(300, 500, 'Reiniciar', False)
 
-# Gerar puzzles
+# Gerar a conta
 def generate_puzzle(room):
     if room == 1:
         a = random.randint(10, 20)
@@ -154,14 +150,14 @@ def configurar_sala(room, diff):
     puzzle = generate_puzzle(room)
     questao_puzzle = puzzle['q']
     solucao_puzzle = puzzle['s']
-    codigo_resolver = solucao_puzzle  # Todas as salas usam a solução como código
+    codigo_resolver = solucao_puzzle
 
     # Definir tamanho da porta
-    tamanho_porta = max(16, 100 - (room - 1) * 14)  # Diminuir de 100 a 16
+    tamanho_porta = max(16, 100 - (room - 1) * 14)
     imagem_porta = pygame.image.load('porta_s.png').convert_alpha()
     imagem_porta = pygame.transform.scale(imagem_porta, (32, 32))
 
-    # Definir posição aleatória da porta
+    # Define posição aleatória da porta
     porta_x = random.randint(0, largura_tela - tamanho_porta)
     porta_y = random.randint(0, altura_tela - tamanho_porta)
     
@@ -169,10 +165,9 @@ def configurar_sala(room, diff):
     print(f"Pergunta: {questao_puzzle}")
     print(f"Código: {codigo_resolver}")
 
-    # Atualizar a posição do campo de entrada de código
     entrada_de_codigo_btn.relative_rect.topleft = (porta_x, porta_y + tamanho_porta + 10)
 
-    # Atualizar a posição da porta
+    # Atualiza a posição da porta
     return porta_x, porta_y
 
 def desenhar_sala(porta_pos):
@@ -182,19 +177,19 @@ def desenhar_sala(porta_pos):
     # Desenhar a porta
     tela.blit(imagem_porta, porta_pos)
     
-    # Desenhar o jogador (sprite GIF)
+    # Desenhar o jogador
     global quadro_atual, tempo_passado
-    tempo_passado += tempo.tick(60) / 1000.0  # Atualiza o tempo passado
+    tempo_passado += tempo.tick(60) / 1000.0
     if tempo_passado > tempo_animacao:
-        quadro_atual = (quadro_atual + 1) % len(quadros_jogador)  # Muda para o próximo quadro
-        tempo_passado = 0  # Reseta o tempo passado
+        quadro_atual = (quadro_atual + 1) % len(quadros_jogador)
+        tempo_passado = 0
 
     tela.blit(quadros_jogador[quadro_atual], posicao_jogador)
     
     # Ajustar cor do texto conforme o fundo
-    cor_texto = cinza if sala_atual >= 4 else branco  # Mais claro nas salas escuras
+    cor_texto = cinza if sala_atual >= 4 else branco
     
-    # Renderizar a pergunta com quebra de linha se necessário
+    # Renderizar a pergunta
     questao_linhas = [questao_puzzle[i:i+30] for i in range(0, len(questao_puzzle), 30)]
     for i, line in enumerate(questao_linhas):
         texto = fonte_pequena.render(line, True, cor_texto)
@@ -206,7 +201,7 @@ def desenhar_sala(porta_pos):
     tela.blit(texto_sala, (20, 20))
     tela.blit(tempo_texto, (20, 50))
     
-    # Dica quando perto da porta
+    # Texto quando perto da porta
     if (abs(posicao_jogador[0] - porta_pos[0]) < 50 and 
         abs(posicao_jogador[1] - porta_pos[1]) < 50):
         dica = fonte_pequena.render("Pressione E para inserir código", True, cor_texto)
@@ -232,10 +227,10 @@ def resetar_jogo():
 
 # Loop principal
 running = True
-porta_pos = (0, 0)  # Inicializar a posição da porta
+porta_pos = (0, 0)
 
 # Iniciar a música de fundo
-pygame.mixer.music.play(-1)  # -1 faz a música tocar em loop
+pygame.mixer.music.play(-1)
 
 while running:
     time_delta = tempo.tick(60)/1000.0
@@ -283,7 +278,7 @@ while running:
                 facil_btn.hide()
                 normal_btn.hide()
                 dificil_btn.hide()
-                porta_pos = configurar_sala(sala_atual, dificuldade)  # Atualiza a posição da porta
+                porta_pos = configurar_sala(sala_atual, dificuldade)
             
             elif event.ui_element == enviar_btn:
                 input_code = entrada_de_codigo_btn.get_text().strip()
@@ -294,8 +289,8 @@ while running:
                         posicao_jogador = [largura_tela//2 - tamanho_jogador//2, altura_tela//2 - tamanho_jogador//2]
                         entrada_de_codigo_btn.hide()
                         enviar_btn.hide()
-                        porta_pos = configurar_sala(sala_atual, dificuldade)  # Atualiza a posição da porta
-                        if som_sucesso:  # Tocar som ao passar de sala
+                        porta_pos = configurar_sala(sala_atual, dificuldade)
+                        if som_sucesso:
                             som_sucesso.play()
                         estado_atual = GAME
                     elif sala_atual == 6:
@@ -304,8 +299,7 @@ while running:
                         enviar_btn.hide()
                         reiniciar_btn.show()
                 else:
-                    # Feedback visual para código errado
-                    mensagem_erro = fonte_pequena.render("Código incorreto!", True, vermelho)
+                    mensagem_erro = fonte_pequena.render("Código Errado!", True, vermelho)
                     tela.blit(mensagem_erro, (350, 300))
                     pygame.display.flip()
                     pygame.time.delay(800)
