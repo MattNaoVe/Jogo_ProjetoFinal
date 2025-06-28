@@ -10,7 +10,6 @@ pygame.init()
 pygame.mixer.init()
 pygame.display.set_caption('Escape Room')
 
-
 largura_tela, altura_tela = 800, 600
 tela = pygame.display.set_mode((largura_tela, altura_tela))
 gerente = pygame_gui.UIManager((largura_tela, altura_tela))
@@ -30,6 +29,9 @@ som_sucesso = pygame.mixer.Sound('acerto.mp3')
 
 volume_musica = 0.5
 pygame.mixer.music.set_volume(volume_musica)
+
+ico = pygame.image.load('keyico.png').convert_alpha()
+pygame.display.set_icon(ico)
 
 # Estados do jogo
 MENU, DIFICULDADE, GAME, CODE_INPUT, GAME_OVER, VITORIA = 0, 1, 2, 3, 4, 5
